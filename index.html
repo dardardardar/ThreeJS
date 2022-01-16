@@ -1,171 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-        * { margin: 0; padding: 0; }
-        html, body { height: 100%; width: 100%; overflow: hidden; }
-        canvas { height: 100%; width: 100%; }
-    </style>
-</head>
-<body>
-    <script type="module">
-        import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+	<head>
+		<title></title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+            body{
+                margin: 0;
+				font-family: Arial, Helvetica, sans-serif;
+				overflow: hidden;
+            }
+			#blocker {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				display: none;
+			}
+			#instructions {
+				
+				width: 100%;
+				height: 100%;
 
-        let scene = new THREE.Scene();
-let camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, .1, 1000);
-let renderer = new THREE.WebGLRenderer();
+				display: -webkit-box;
+				display: -moz-box;
+				display: box;
 
-let controls = {};
-let player = {
-  height: .5,
-  turnSpeed: .1,
-  speed: .1,
-  jumpHeight: .2,
-  gravity: .01,
-  velocity: 0,
-  
-  playerJumps: false
-};
+				-webkit-box-orient: horizontal;
+				-moz-box-orient: horizontal;
+				box-orient: horizontal;
 
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-scene.background = new THREE.Color("black");
-document.body.appendChild(renderer.domElement);
+				-webkit-box-pack: center;
+				-moz-box-pack: center;
+				box-pack: center;
 
-// BrowserWindow->Renderer:ResizeRe-Render
-window.addEventListener('resize', () => {
-  let w = window.innerWidth,
-      h = window.innerHeight;
-  
-  renderer.setSize(w, h);
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-});
+				-webkit-box-align: center;
+				-moz-box-align: center;
+				box-align: center;
 
-// Camera:Setup
-camera.position.set(0, player.height, -5);
-camera.lookAt(new THREE.Vector3(0, player.height, 0));
+				color: #ffffff;
+				text-align: center;
 
-// Object:Box1
-let BoxGeometry1 = new THREE.BoxGeometry(1, 1, 1);
-let BoxMaterial1 = new THREE.MeshBasicMaterial({ color: "white", wireframe: false });
-let Box1 = new THREE.Mesh(BoxGeometry1, BoxMaterial1);
+				cursor: pointer;
+				background-color: rgba(0,0,0,0.5);;
+			}
+			.timer > p{
+				text-align: center;
+				font-weight: bolder;
+				font-size: xx-large;
+			}
 
-Box1.position.y = 3;
-Box1.scale.x = Box1.scale.y = Box1.scale.z = .25;
-scene.add(Box1);
+			.timer{
+				position: absolute;
+				width: 100%;
+			}
+			#timeelapsed{
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="blocker">
 
-// Object:Box2
-let BoxGeometry2 = new THREE.BoxGeometry(1, 1, 1);
-let BoxMaterial2 = new THREE.MeshPhongMaterial({ color: "white", wireframe: false });
-let Box2 = new THREE.Mesh(BoxGeometry2, BoxMaterial2);
+            <div id="instructions">
+                <span id="title" style="font-size:40px">GAME OVER</span>
+                <br />
+				<span id="timeelapsed"></span>
+				<br>
+                press enter to reload
+            </div>
 
-Box2.position.y = .75;
-Box2.position.x = 0;
-Box2.receiveShadow = true;
-Box2.castShadow = true;
+        </div>
+		<div class="timer"><p><span id="timer"></p></span></p></div>
+		<div id="container"></div>
+		<script type="module" src="index.js">
 
-scene.add(Box2);
-
-
-// Object:Plane
-let PlaneGeometry1 = new THREE.PlaneGeometry(10, 10);
-let PlaneMaterial1 = new THREE.MeshPhongMaterial({ color: "white", wireframe: false });
-let Plane1 = new THREE.Mesh(PlaneGeometry1, PlaneMaterial1);
-
-Plane1.rotation.x -= Math.PI / 2;
-Plane1.scale.x = 3;
-Plane1.scale.y = 3;
-Plane1.receiveShadow = true;
-scene.add(Plane1);
-
-// Object:Light:1
-let light1 = new THREE.PointLight("white", .8);
-light1.position.set(0, 3, 0);
-light1.castShadow = true;
-light1.shadow.camera.near = 2.5;
-scene.add(light1);
-
-// Object:Light:2
-let light2 = new THREE.AmbientLight("white", .15);
-light2.position.set(10, 2, 0);
-scene.add(light2);
-
-// Controls:Listeners
-document.addEventListener('keydown', ({ keyCode }) => { controls[keyCode] = true });
-document.addEventListener('keyup', ({ keyCode }) => { controls[keyCode] = false });
-
-// ...
-function control() {
-  // Controls:Engine 
-  if(controls[87]){ // w
-    camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
-    camera.position.z -= -Math.cos(camera.rotation.y) * player.speed;
-  }
-  if(controls[83]){ // s
-    camera.position.x += Math.sin(camera.rotation.y) * player.speed;
-    camera.position.z += -Math.cos(camera.rotation.y) * player.speed;
-  }
-  if(controls[65]){ // a
-    camera.position.x += Math.sin(camera.rotation.y + Math.PI / 2) * player.speed;
-    camera.position.z += -Math.cos(camera.rotation.y + Math.PI / 2) * player.speed;
-  }
-  if(controls[68]){ // d
-    camera.position.x += Math.sin(camera.rotation.y - Math.PI / 2) * player.speed;
-    camera.position.z += -Math.cos(camera.rotation.y - Math.PI / 2) * player.speed;
-  }
-  if(controls[37]){ // la
-    camera.rotation.y -= player.turnSpeed;
-  }
-  if(controls[39]){ // ra
-    camera.rotation.y += player.turnSpeed;
-  }
-  if(controls[32]) { // space
-    if(player.jumps) return false;
-    player.jumps = true;
-    player.velocity = -player.jumpHeight;
-  }
-}
-
-function ixMovementUpdate() {
-  player.velocity += player.gravity;
-  camera.position.y -= player.velocity;
-  
-  if(camera.position.y < player.height) {
-    camera.position.y = player.height;
-    player.jumps = false;
-  }
-}
-
-function ixLightcubeAnimation() {
-  let a = .01;
-  Box1.rotation.x += a;
-  Box1.rotation.y += a;
-}
-
-function update() {
-  control();
-  ixMovementUpdate();
-  ixLightcubeAnimation();
-}
-
-function render() {
-  renderer.render(scene, camera);
-}
-
-function loop() {
-  requestAnimationFrame(loop);
-  update();
-  render();
-}
-
-loop();
-
-
-    </script>
-</body>
+		</script>
+	</body>
 </html>
