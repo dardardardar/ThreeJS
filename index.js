@@ -1,11 +1,10 @@
 import * as THREE from './three.js/build/three.module.js'
-import Stats from './three.js/examples/jsm/libs/stats.module.js';
 import { Octree } from './three.js/examples/jsm/math/Octree.js';
 import { Capsule } from './three.js/examples/jsm/math/Capsule.js';
 
 
 var clock = new THREE.Clock();
-var blocker = document.getElementById("blocker")
+
 var scene = new THREE.Scene();
 scene.background = new THREE.Color( 0x88ccff );
 
@@ -24,20 +23,15 @@ var renderer = new THREE.WebGLRenderer( { antialias: true } );
 renderer.setPixelRatio( window.devicePixelRatio );
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.VSMShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap;
 
 var container = document.getElementById( 'container' );
 
 container.appendChild( renderer.domElement );
 
-var stats = new Stats();
-stats.domElement.style.position = 'absolute';
-stats.domElement.style.top = '0px';
-
-container.appendChild( stats.domElement );
-
-var GRAVITY = 30;
-var STEPS_PER_FRAME = 5;
+var blocker = document.getElementById("blocker")
+var gravity = 30;
+var stepperframe = 5;
 
 var BoxGeometry = new THREE.BoxGeometry(6, 1,6)
 var BoxMaterial = new THREE.MeshPhongMaterial({ color: 0xaaff77, wireframe: false });
@@ -100,9 +94,7 @@ function playerCollisions() {
         playerOnFloor = result.normal.y > 0;
 
         if ( ! playerOnFloor ) {
-
             playerVelocity.addScaledVector( result.normal, - result.normal.dot( playerVelocity ) );
-
         }
 
         playerCollider.translate( result.normal.multiplyScalar( result.depth ) );
@@ -116,18 +108,14 @@ function updatePlayer( deltaTime ) {
 
     if ( ! playerOnFloor ) {
 
-        playerVelocity.y -= GRAVITY * deltaTime;
+        playerVelocity.y -= gravity * deltaTime;
         damping *= 0.1;
 
     }
-
     playerVelocity.addScaledVector( playerVelocity, damping );
-
     var deltaPosition = playerVelocity.clone().multiplyScalar( deltaTime );
     playerCollider.translate( deltaPosition );
-
     playerCollisions();
-
     camera.position.copy( playerCollider.end );
 
     if(camera.position.z < -46){
@@ -247,8 +235,8 @@ function onWindowResize() {
 window.addEventListener( 'resize', onWindowResize );
 function animate() {
 
-    var deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
-    for ( var i = 0; i < STEPS_PER_FRAME; i ++ ) {
+    var deltaTime = Math.min( 0.05, clock.getDelta() ) / stepperframe;
+    for ( var i = 0; i < stepperframe; i ++ ) {
         controls( deltaTime );
         updatePlayer( deltaTime );
         timer()
@@ -256,7 +244,6 @@ function animate() {
     }
 
     renderer.render( scene, camera );
-    stats.update();
     requestAnimationFrame( animate );
 
 }
